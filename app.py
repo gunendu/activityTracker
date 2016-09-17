@@ -75,7 +75,6 @@ def editProduct():
         db.session.commit()
 
     if itemId and varianceId and propertyId:
-        print "inside third level"
         for key in data:
             if key in ["sellingPrice","costPrice","Quantity"]:
                 userActivity = UserActivity(userId,itemId,varianceId,propertyId,data[key],updateAt)
@@ -101,18 +100,40 @@ def editVariant():
 @app.route("/user/activity/<userId>",methods=['GET'])
 def getUserActivity(userId):
     result = []
-    response = db.session.query(UserActivity,User,Variant).join(User).join(Variant).filter(User.Id == userId).all()
+    response = db.session.query(UserActivity).filter(User.Id == userId).all()
     for row in response:
-         temp1 = {}
-         for res in row:
-             temp = row2dict(res)
-             for key in temp:
-                 if key in ["Username","ItemId","name"]:
-                     temp1[key] = temp[key]
-         result.append(temp1)
+         temp = row2dict(row)
+         result.append(temp)
 
+    print formulateResponse(result,userId)
     return jsonify({"out":result})
 
+def formulateResponse(result,userId):
+    propids = []
+    itemids = []
+    res = ""
+    user = User.query.filter(User.Id==userId).first()
+    if user is not None:
+        res = res + user.Username + " edited "
+    for d in result:
+        if d['PropertyId'] is not None:
+            propids.append(d['PropertyId'])
+        itemids.append(d['ItemId'])
+
+    propids = set(propids)
+    response = Property.query.filter(Property.id.in_(propids)).all()
+    for key in response:
+        temp = row2dict(key)
+        res = res + temp['Properties'] + ","
+
+    res = res + " of "
+    itemids = set(itemids)
+    response = Product.query.filter(Product.ItemId.in_(itemids)).all()
+    for key in response:
+        temp = row2dict(key)
+        res = res + temp['Properties']
+        
+    return res
 def row2dict(row):
     d = {}
     for column in row.__table__.columns:
