@@ -9,23 +9,32 @@ db.init_app(app)
 
 @app.route("/User/save",methods=['POST'])
 def createUser():
-    user = request.data()
+    data = request.data()
     data = json.loads(data)
     db.session.add(data['name'])
     db.session.commit()
     return {}
 
+@app.route("/Product/add",methods=['POST'])
+def createProduct():
+    data = request.data
+    data = json.loads(data)
+    product = Product(data['productname'],data['productcode'],data['branchid'])
+    db.session.add(product)
+    db.session.commit()
+    return jsonify ({})
+
 @app.route("/Item/Variants/add",methods=['POST'])
 def createVariant():
     data = request.data
     data = json.loads(data)
-    variant = Variant(data['name'])
+    variant = Variant(data['name'],data['itemId'])
     db.session.add(variant)
     db.session.commit()
     return jsonify ({})
 
 @app.route("/Item/Variants/edit",methods=['POST'])
-def createProduct():
+def editVariant():
     data = request.data
     data = json.loads(data)
     userId = data['userId']
@@ -41,10 +50,15 @@ def createProduct():
 @app.route("/User/Activity/<userId>",methods=['GET'])
 def getUserActivity(userId):
     result = []
-    response = db.session.query(User,UserActivity,Variant).filter(User.Id == UserActivity.UserId).filter(Variant.id == UserActivity.ActivityId).filter(User.Id == userId).all()
-    for res in response:
-        for row in res:
-            result.append(row2dict(row))
+    response = db.session.query(UserActivity,User,Variant).join(User).join(Variant).filter(User.Id == userId).all()
+    for row in response:
+         temp1 = {}
+         for res in row:
+             temp = row2dict(res)
+             for key in temp:
+                 if key in ["Username","ItemId","name"]:
+                     temp1[key] = temp[key]
+         result.append(temp1)
 
     return jsonify({"out":result})
 

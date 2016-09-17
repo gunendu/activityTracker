@@ -3,8 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
 class User(db.Model):
-    # fields here
-    __tablename__ = 'User'
+    __tablename__ = "User"
     Id = db.Column(db.Integer,primary_key=True)
     Username = db.Column(db.String(300))
 
@@ -29,6 +28,7 @@ class Variant(db.Model):
     __tablename__ = "Variant"
     id = db.Column(db.Integer,primary_key=True)
     name = db.Column(db.String(100))
+    ItemId = db.Column(db.Integer,db.ForeignKey('Product.ItemId'))
 
     def __init__(self,name):
         self.name = name
