@@ -83,19 +83,6 @@ def editProduct():
 
     return jsonify({})
 
-@app.route("/variants/edit",methods=['POST'])
-def editVariant():
-    data = request.data
-    data = json.loads(data)
-    userId = data['userId']
-    itemId = data['itemId']
-    activityId = data['activityId']
-
-    updateAt = datetime.datetime.now()
-    userActivity = UserActivity(userId,itemId,activityId,updateAt)
-    db.session.add(userActivity)
-    db.session.commit()
-    return jsonify ({})
 
 @app.route("/user/activity/<userId>",methods=['GET'])
 def getUserActivity(userId):
@@ -132,7 +119,7 @@ def formulateResponse(result,userId):
     for key in response:
         temp = row2dict(key)
         res = res + temp['Properties']
-        
+
     return res
 def row2dict(row):
     d = {}
